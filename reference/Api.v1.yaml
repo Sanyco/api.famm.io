@@ -1,0 +1,841 @@
+openapi: 3.0.0
+info:
+  title: Api
+  version: '1.0'
+  description: |
+    fsdfdsdsfds
+    sdfsd
+servers:
+  - url: 'https://api.famm.io/'
+    description: v1.1
+paths:
+  api/v1.1/user/login:
+    post:
+      summary: login
+      tags:
+        - User
+        - login
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        description: User ID
+                      email:
+                        type: string
+                        description: User email
+                        format: email
+                      resultsCount:
+                        type: integer
+                        description: кількість результатів які використав користувач
+                      resultsLimit:
+                        type: integer
+                        description: максимальна кількість результатів яку може використати користувач
+                      packageExpireAt:
+                        type: string
+                        description: Pachage valid to date
+                        format: date-time
+                      package:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            description: Package id
+                          name:
+                            type: string
+                            description: Package name
+                          maxProjects:
+                            type: integer
+                            description: максимальна кількість проектів яку може створити користувач
+                          maxProjectKeywords:
+                            type: integer
+                            description: максимальна кількість ключових слів які може створити користувач
+                          maxResultsLimit:
+                            type: integer
+                            description: максимальна кількість результатів яку може використати користувач
+                          historicalSearchDaysDepth:
+                            type: integer
+                            description: кількість днів на яку ми шукаємо в глубину від поточної дати
+                          searchPagesDepth:
+                            type: integer
+                            description: кількість сторінок яку завантажуємо при пошуку
+                  token:
+                    type: string
+                    description: токен користувача. використовується в подальшому для всіх наступних запитів
+              examples:
+                Example:
+                  value:
+                    data:
+                      id: 1
+                      email: admin@famm.io
+                      firstName: admin
+                      lastName: admin
+                      company: null
+                      phone: null
+                      packageExpireAt: '2020-03-12 12:02:44'
+                      menu: 1
+                      onboarded: true
+                      onboardedBtn: null
+                      jobTitle: null
+                      countryId: null
+                      languageId: null
+                      facebookLink: null
+                      instagramLink: null
+                      twitterLink: null
+                      youtubeLink: null
+                      pinterestLink: null
+                      resultsCount: 72
+                      resultsLimit: 250
+                      timezone: Europe/Kiev
+                      package:
+                        id: 1
+                        name: Freemium
+                        maxProjects: 1
+                        maxProjectKeywords: 3
+                        maxResultsLimit: 250
+                        historicalSearchDaysDepth: 30
+                        searchPagesDepth: 1
+                        expirePeriodDays: 30
+                        includedExcludedAllowed: false
+                        defaultPackage: true
+                        cost: 0
+                        maxPrice: false
+                        updateFrequency: 0
+                        api:
+                          - reddit
+                          - youtube
+                          - twitter
+                          - news
+                    token: eyJ0eXAiOiJKV1...3ufh1uXGgNfajJjOwE
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  errors:
+                    type: array
+                    items: {}
+                required:
+                  - message
+                  - errors
+              examples:
+                Example:
+                  value:
+                    message: Invalid Email Address or Password
+                    errors:
+                      password:
+                        - forbidden
+      operationId: user-login
+      description: для логіну в систему та отримання токену
+      parameters:
+        - schema:
+            type: string
+            minLength: 6
+            maxLength: 128
+          in: query
+          name: password
+          description: пароль користувача
+          required: true
+        - schema:
+            type: string
+            maxLength: 128
+          in: query
+          name: email
+          required: true
+          description: емейл користувача
+    parameters: []
+  /api/v1.1/project:
+    get:
+      summary: info
+      tags:
+        - Project
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        status:
+                          type: string
+                          enum:
+                            - active
+                            - blocked
+                        projectKeywords:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: integer
+                              name:
+                                type: string
+                              project_id:
+                                type: integer
+                              type:
+                                type: string
+                                enum:
+                                  - normal
+                                  - included
+                                  - excluded
+                              status:
+                                type: string
+                                enum:
+                                  - active
+                                  - blocked
+                              inactive:
+                                type: boolean
+              examples:
+                Example:
+                  value:
+                    data:
+                      - id: 1
+                        name: Famm.io
+                        status: active
+                        category: none
+                        country: null
+                        language: null
+                        projectKeywords:
+                          - id: 1
+                            name: fammio
+                            project_id: 1
+                            type: normal
+                            inactive: false
+                            status: active
+                        projectFilters: []
+      operationId: get-api-v1.1-procject
+      description: отримати інформацію про доступні проекти користувача
+      parameters:
+        - schema:
+            type: string
+            pattern: 'Bearer {{TOKEN}}'
+          in: header
+          name: Authorization
+          required: true
+          description: токен користувача
+    post:
+      summary: create
+      tags:
+        - Project
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        description: Ід проекту
+                      name:
+                        type: string
+                        description: назва
+                      status:
+                        type: string
+                        description: статус
+                        enum:
+                          - active
+                          - blocked
+                      category:
+                        type: string
+                        description: категорія
+                      projectKeywords:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                              description: ІД ключового слова
+                            name:
+                              type: string
+                              description: назва ключового слова
+                            project_id:
+                              type: integer
+                              description: ІД проекту
+                            type:
+                              type: string
+                              description: тип
+                              enum:
+                                - normal
+                                - included
+                                - excluded
+                            status:
+                              type: string
+                              description: статус
+                              enum:
+                                - active
+                                - blocked
+              examples:
+                Example:
+                  value:
+                    data:
+                      id: 1
+                      name: Famm.io
+                      status: active
+                      category: none
+                      country: null
+                      language: null
+                      projectKeywords:
+                        - id: 1
+                          name: fammio
+                          project_id: 1
+                          type: normal
+                          toggle_time: '2020-02-11 14:17:39'
+                          inactive: false
+                          status: active
+                        - id: 2
+                          name: famm.io
+                          project_id: 331
+                          type: normal
+                          toggle_time: '2020-02-11 14:17:39'
+                          inactive: false
+                          status: active
+      operationId: post-api-v1.1-procject
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: Authorization
+          required: true
+          description: токен користувача
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 3
+                  maxLength: 128
+                  pattern: "^[a-zA-Z0-9_\\-.+!@#%&\\^~][a-zA-Z0-9][a-zA-Z0-9_\\-.+!@#%&\\^~ ]"
+                projectKeywords:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        enum:
+                          - normal
+                          - included
+                          - excluded
+                      name:
+                        type: string
+                        minLength: 3
+                        maxLength: 128
+                    required:
+                      - type
+                      - name
+              required:
+                - name
+                - projectKeywords
+            examples:
+              Example:
+                value:
+                  name: Famm.io
+                  projectKeywords:
+                    - name: fammio
+                      type: normal
+                    - name: famm.io
+                      type: normal
+                  categoryName: none
+          application/xml:
+            schema:
+              type: object
+              properties: {}
+        description: ''
+      description: створити проект з ключовими словами
+    put:
+      summary: update
+      tags:
+        - Project
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                      status:
+                        type: string
+                      category:
+                        type: string
+                      projectKeywords:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            name:
+                              type: string
+                            type:
+                              type: string
+                            status:
+                              type: string
+                            project_id:
+                              type: integer
+              examples:
+                Example:
+                  value:
+                    data:
+                      id: 33
+                      name: Famm.io new
+                      status: active
+                      category: none
+                      country: null
+                      language: null
+                      projectKeywords:
+                        - id: 59
+                          name: fammio
+                          project_id: 33
+                          type: normal
+                          toggle_time: '2020-02-11 14:17:39'
+                          inactive: false
+                          status: active
+                        - id: 60
+                          name: famm.io
+                          project_id: 33
+                          type: normal
+                          toggle_time: '2020-02-11 14:17:39'
+                          inactive: false
+                          status: active
+                      projectFilters: []
+      operationId: put-api-v1.1-procject
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: Authorization
+          required: true
+          description: токен користувача
+        - schema:
+            type: string
+          in: query
+          name: id
+          description: ІД проекту
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                categoryName:
+                  type: string
+                status:
+                  type: string
+                projectKeywords:
+                  type: array
+                  description: масив ключових слів. потрібно передавати усі ключові слова які належать до даного проекту
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      type:
+                        type: string
+            examples:
+              Example:
+                value:
+                  name: Famm.io
+                  projectKeywords:
+                    - name: fammio
+                      type: normal
+                    - name: famm.io
+                      type: normal
+                  categoryName: none
+                  status: active
+        description: ''
+    delete:
+      summary: delete
+      tags:
+        - Project
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+              examples:
+                Example:
+                  value:
+                    success: true
+      operationId: delete-api-v1.1-procject
+      description: ''
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: Authorization
+          required: true
+          description: токен користувача
+        - schema:
+            type: string
+          in: query
+          description: ІД проекту
+          name: id
+          required: true
+      requestBody: {}
+    parameters: []
+  /api/v1.1/project-keyword/results:
+    get:
+      summary: results
+      tags:
+        - Results
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        keywordId:
+                          type: integer
+                        url:
+                          type: string
+                        title:
+                          type: string
+                        body:
+                          type: string
+                        domain:
+                          type: string
+                        date:
+                          type: string
+                        type:
+                          type: string
+                        status:
+                          type: string
+                        countryId:
+                          type: integer
+                          description: ІД країни
+                        languageId:
+                          type: integer
+                          description: ІД мови
+                        location:
+                          type: string
+                        favourite:
+                          type: boolean
+                          description: чи додано в улюблені
+                        likes:
+                          type: integer
+                        dislikes:
+                          type: integer
+                        views:
+                          type: integer
+                        comments:
+                          type: integer
+                        shares:
+                          type: integer
+                        reach:
+                          type: integer
+                        authorPhoto:
+                          type: string
+                        authorName:
+                          type: string
+                        authorFollowers:
+                          type: integer
+                        authorFriends:
+                          type: integer
+                        authorFavourites:
+                          type: integer
+                        additionalData:
+                          type: object
+                          properties:
+                            tweet:
+                              type: string
+                  keywordId:
+                    type: array
+                    description: масив ключових слів
+                    items: {}
+                  totalResults:
+                    type: object
+                    properties:
+                      newResultsByKeyword:
+                        type: object
+                        description: нових результатів ко кожнову ключовому слову
+                        properties:
+                          '{keywordId}':
+                            type: integer
+                      type:
+                        type: object
+                        description: кількість результатів розбита по типам
+                        properties:
+                          web:
+                            type: integer
+                          youtube:
+                            type: integer
+                          twitter:
+                            type: integer
+                          facebook:
+                            type: integer
+                          telegram:
+                            type: integer
+                          news:
+                            type: integer
+                          blogs:
+                            type: integer
+                          instagram:
+                            type: integer
+                          forums:
+                            type: integer
+                          reddit:
+                            type: integer
+                      status:
+                        type: object
+                        description: кількість результатів розбита по статусу
+                        properties:
+                          noClicked:
+                            type: integer
+                          newNoViewed:
+                            type: integer
+                          new:
+                            type: integer
+              examples:
+                Example:
+                  value:
+                    data:
+                      - id: 92585
+                        keywordId: 61
+                        url: 'https://twitter.com/edertec/status/1227222217118961664'
+                        title: Éderson Almeida Pedro
+                        body: '...ailmarketing melhoraram 50% depois que eu mudei para @SendPulseCom. Junte-se e obter… https://t.co/N4HhgnEpBt'
+                        domain: twitter.com
+                        date: '2020-02-11 15:25:51'
+                        type: twitter
+                        status: newNoViewed
+                        countryId: 27
+                        languageId: 111
+                        negative: 0
+                        positive: 0
+                        neutral: 0
+                        location: '{"city":"Caxias do Sul","country":"Brazil","code":"br","state":"Rio Grande do Sul","countryId":"27","cityId":"2110","stateId":"450"}'
+                        favourite: false
+                        likes: 0
+                        dislikes: 0
+                        views: 0
+                        comments: 0
+                        shares: 0
+                        reach: 512
+                        authorPhoto: 'https://pbs.twimg.com/profile_images/1216338763665879040/ibo24aIX_normal.jpg'
+                        authorName: Éderson Almeida Pedro
+                        authorFollowers: 512
+                        authorFriends: 1917
+                        authorFavourites: 6626
+                        additionalData:
+                          tweet: '1'
+                      - id: 92658
+                        keywordId: 61
+                        url: 'https://www.facebook.com/DariaLarina2019/videos/452412958992784/'
+                        title: Кейтеринговая компания Банда Вкуса
+                        body: '...rium, Парк рoзваг "Планета", Кафе Цапа, Sendpulse, Частная Языковая Школа, Дитячий садок Монтессорі...'
+                        domain: www.facebook.com
+                        date: '2019-12-11 02:00:00'
+                        type: facebook
+                        status: new
+                        countryId: 0
+                        languageId: 150
+                        negative: 0
+                        positive: 0
+                        neutral: 0
+                        location: ''
+                        favourite: false
+                        likes: 0
+                        dislikes: 0
+                        views: 0
+                        comments: 0
+                        shares: 0
+                        reach: 0
+                        authorPhoto: 'https://scontent-ams4-1.xx.fbcdn.net/v/t1.0-1/p74x74/67926457_349755745942411_7757570058884218880_n.jpg?_nc_cat=110&_nc_oc=AQm_kQoHJw8Sc2Ndii1_ZFSL31hqr11TYKxe2niDMddDwemy02L2r0V8-oFFDiNGzkc&_nc_ht=scontent-ams4-1.xx&oh=8f6ffccae04dc8f8bc452be578ae47be&oe=5E2340DE'
+                        authorName: 'Кейтеринговая компания "Банда Вкуса"'
+                        authorFollowers: 0
+                        authorFriends: 0
+                        authorFavourites: 562
+                        additionalData:
+                          type: ''
+                          additionalData: ''
+                    keywordId:
+                      - '61'
+                    by: desc
+                    order: date
+                    unique: none
+                    take: '100'
+                    skip: '0'
+                    from: '2019-11-11'
+                    to: '2020-02-11'
+                    includeNew: '1'
+                    favourites: '0'
+                    totalResults:
+                      newResultsByKeyword:
+                        '61': 0
+                      type:
+                        web: 0
+                        youtube: 26
+                        twitter: 42
+                        facebook: 61
+                        telegram: 0
+                        news: 2
+                        instagram: 0
+                        blogs: 0
+                        forums: 0
+                        reddit: 2
+                      status:
+                        noClicked: 72
+                        newNoViewed: 61
+                        new: 0
+                    totalPages: 2
+      operationId: get-api-v1.1-project-keyword-results
+      description: отримати результати
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: Authorization
+          required: true
+        - schema:
+            type: array
+          in: query
+          name: keywordId
+          required: true
+          description: ІД куйвордів для яких потрібно отримати результати
+        - schema:
+            type: string
+            enum:
+              - date
+              - likes
+              - dislikes
+              - shares
+              - views
+              - comments
+            default: date
+          in: query
+          name: order
+          required: true
+          description: колонка для сортування
+        - schema:
+            type: string
+            enum:
+              - asc
+              - desc
+          in: query
+          name: by
+          required: true
+          description: порядок сортування(asc від меншого до більшого. desc - від більшого до меншого)
+        - schema:
+            type: string
+            default: none
+            enum:
+              - none
+              - body
+              - url
+              - title
+          in: query
+          name: unique
+          required: true
+          description: тільки унікальні результати по вказаному полю
+        - schema:
+            type: integer
+          in: query
+          name: take
+          required: true
+          description: кількість результатів яку потрібно отримати
+        - schema:
+            type: integer
+          in: query
+          name: skip
+          required: true
+          description: кількість результатів яку потрібно пропустити
+        - schema:
+            type: string
+          in: query
+          name: from
+          required: true
+          description: фільтр дати від якої потрібно робити вибірку
+        - schema:
+            type: string
+          in: query
+          name: to
+          required: true
+          description: фільтр дати до якої потрібно робити вибірку
+        - schema:
+            type: boolean
+          in: query
+          name: favourites
+          required: true
+          description: якщо true то поверне тільки результати які додані в обрані
+        - schema:
+            type: array
+            enum:
+              - news
+              - twitter
+              - facebook
+              - youtube
+              - instagram
+              - telegram
+              - reddit
+          in: query
+          name: type
+          description: тип результатів
+        - schema:
+            type: array
+          in: query
+          name: languageId
+          description: ІД мов на яких виводити результати
+        - schema:
+            type: boolean
+          in: query
+          name: includeNew
+          description: якщо 1 включає у видачу нові результати які були знайдені
+components:
+  schemas: {}
+  securitySchemes: {}
